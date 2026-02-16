@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Data Collection - Smart Glasses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📊 Data Collection</h2>
+    <p>Collect training data for ISL signs</p>
+    
+    <form id="collection-form">
+        <label for="sign-name">Sign Name</label>
+        <input type="text" id="sign-name" name="sign" 
+               placeholder="e.g., Hello, A, B, Thanks" required>
+        
+        <label for="num-samples">Number of Samples</label>
+        <input type="number" id="num-samples" name="samples" 
+               value="200" min="50" max="1000" required>
+        
+        <button type="submit">▶️ Start Collection</button>
+    </form>
+    
+    <div id="collection-status" style="display: none;">
+        <div class="message info">
+            <strong>Collection in progress...</strong>
+            <br>Show the sign to the camera on your Pi
+            <br>Samples collected: <span id="sample-count">0</span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Collected Signs</h3>
+    <button onclick="loadCollectedSigns()" class="btn-secondary">🔄 Refresh List</button>
+    
+    <ul class="sign-list" id="sign-list">
+        <li style="padding: 1rem; text-align: center; color: var(--text-secondary);">
+            Click Refresh to load signs
+        </li>
+    </ul>
+</div>
+
+<div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showMessage(text, type = 'info') {
+        const messageArea = document.getElementById('message-area');
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        messageArea.innerHTML = '';
+        messageArea.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 5000);
+    }
+    
+    document.getElementById('collection-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const data = {
+            sign: formData.get('sign'),
+            samples: parseInt(formData.get('samples'))
+        };
+        
+        try {
+            const response = await fetch('/api/collect/start', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                showMessage(result.message, 'success');
+                document.getElementById('collection-status').style.display = 'block';
+                
+                // Note: In a full implementation, you would use SocketIO to 
+                // receive real-time updates on collection progress
+            } else {
+                showMessage('Failed to start collection: ' + result.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    });
+    
+    async function loadCollectedSigns() {
+        try {
+            const response = await fetch('/api/collect/list');
+            const data = await response.json();
+            
+            const signList = document.getElementById('sign-list');
+            signList.innerHTML = '';
+            
+            if (data.success) {
+                if (data.signs.length === 0) {
+                    signList.innerHTML = '<li style="padding: 1rem; text-align: center; color: var(--text-secondary);">No signs collected yet</li>';
+                } else {
+                    data.signs.forEach(sign => {
+                        const li = document.createElement('li');
+                        li.className = 'sign-item';
+                        li.innerHTML = `
+                            <span class="name">${sign.name}</span>
+                            <span class="count">${sign.samples} samples</span>
+                        `;
+                        signList.appendChild(li);
+                    });
+                }
+            } else {
+                signList.innerHTML = '<li style="padding: 1rem; color: var(--accent-danger);">Error loading signs</li>';
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    // Load signs on page load
+    loadCollectedSigns();
+</script>
+{% endblock %}

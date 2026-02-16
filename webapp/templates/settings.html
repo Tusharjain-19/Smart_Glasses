@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Smart Glasses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>⚙️ Settings</h2>
+    
+    <form id="settings-form">
+        <div class="input-group">
+            <label for="confidence_threshold">
+                Confidence Threshold
+                <span class="input-value" id="confidence-value">{{ config.get('confidence_threshold', 0.7) }}</span>
+            </label>
+            <input type="range" id="confidence_threshold" name="confidence_threshold" 
+                   min="0.5" max="0.99" step="0.01" 
+                   value="{{ config.get('confidence_threshold', 0.7) }}"
+                   oninput="document.getElementById('confidence-value').textContent = this.value">
+        </div>
+        
+        <div class="input-group">
+            <label for="stability_frames">
+                Stability Frames
+                <span class="input-value" id="stability-value">{{ config.get('stability_frames', 15) }}</span>
+            </label>
+            <input type="range" id="stability_frames" name="stability_frames" 
+                   min="5" max="30" step="1" 
+                   value="{{ config.get('stability_frames', 15) }}"
+                   oninput="document.getElementById('stability-value').textContent = this.value">
+            <small style="color: var(--text-secondary);">Number of consecutive frames required before announcing</small>
+        </div>
+        
+        <div class="input-group">
+            <label for="cooldown_seconds">
+                Cooldown Seconds
+                <span class="input-value" id="cooldown-value">{{ config.get('cooldown_seconds', 3) }}</span>
+            </label>
+            <input type="range" id="cooldown_seconds" name="cooldown_seconds" 
+                   min="1" max="10" step="1" 
+                   value="{{ config.get('cooldown_seconds', 3) }}"
+                   oninput="document.getElementById('cooldown-value').textContent = this.value">
+            <small style="color: var(--text-secondary);">Minimum time between repeated announcements</small>
+        </div>
+        
+        <div class="input-group">
+            <label for="speech_rate">
+                Speech Rate (words per minute)
+                <span class="input-value" id="rate-value">{{ config.get('speech_rate', 150) }}</span>
+            </label>
+            <input type="range" id="speech_rate" name="speech_rate" 
+                   min="100" max="300" step="10" 
+                   value="{{ config.get('speech_rate', 150) }}"
+                   oninput="document.getElementById('rate-value').textContent = this.value">
+        </div>
+        
+        <div class="input-group">
+            <label for="speech_volume">
+                Speech Volume
+                <span class="input-value" id="volume-value">{{ config.get('speech_volume', 0.9) }}</span>
+            </label>
+            <input type="range" id="speech_volume" name="speech_volume" 
+                   min="0.1" max="1.0" step="0.1" 
+                   value="{{ config.get('speech_volume', 0.9) }}"
+                   oninput="document.getElementById('volume-value').textContent = this.value">
+        </div>
+        
+        <div class="input-group">
+            <label for="camera_source">Camera Source</label>
+            <select id="camera_source" name="camera_source">
+                <option value="0" {% if config.get('camera_source', 0) == 0 %}selected{% endif %}>Camera 0 (Default)</option>
+                <option value="1" {% if config.get('camera_source', 0) == 1 %}selected{% endif %}>Camera 1</option>
+                <option value="picamera" {% if config.get('camera_source', 0) == 'picamera' %}selected{% endif %}>Pi Camera</option>
+            </select>
+        </div>
+        
+        <div class="button-grid">
+            <button type="submit">💾 Save Settings</button>
+            <button type="button" onclick="resetSettings()" class="btn-warning">🔄 Reset to Defaults</button>
+        </div>
+    </form>
+</div>
+
+<div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showMessage(text, type = 'info') {
+        const messageArea = document.getElementById('message-area');
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        messageArea.innerHTML = '';
+        messageArea.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 5000);
+    }
+    
+    document.getElementById('settings-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const settings = {};
+        
+        for (let [key, value] of formData.entries()) {
+            // Convert numeric strings to numbers
+            if (key === 'camera_source') {
+                settings[key] = value;
+            } else {
+                settings[key] = parseFloat(value);
+            }
+        }
+        
+        try {
+            const response = await fetch('/api/settings/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Settings saved successfully!', 'success');
+            } else {
+                showMessage('Failed to save settings: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    });
+    
+    async function resetSettings() {
+        if (!confirm('Reset all settings to defaults?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/settings/reset', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Settings reset to defaults!', 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showMessage('Failed to reset settings: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+</script>
+{% endblock %}

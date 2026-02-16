@@ -1,0 +1,416 @@
+/* Mobile-First Dark Theme CSS for Smart Glasses Web App */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2a2a2a;
+    --bg-card: #333333;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --accent-primary: #00ff88;
+    --accent-danger: #ff4444;
+    --accent-warning: #ffaa00;
+    --accent-info: #44aaff;
+    --border-color: #444444;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* Navigation */
+nav {
+    background-color: var(--bg-secondary);
+    padding: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+nav h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-primary);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    background-color: var(--bg-card);
+    display: inline-block;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+nav a:hover,
+nav a.active {
+    background-color: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+/* Container */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-card);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--accent-primary);
+}
+
+.card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.running {
+    background-color: var(--accent-primary);
+}
+
+.status-indicator.stopped {
+    background-color: var(--accent-danger);
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Buttons */
+button,
+.btn {
+    background-color: var(--accent-primary);
+    color: var(--bg-primary);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+button:hover,
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+button:active,
+.btn:active {
+    transform: translateY(0);
+}
+
+button.btn-danger {
+    background-color: var(--accent-danger);
+}
+
+button.btn-warning {
+    background-color: var(--accent-warning);
+}
+
+button.btn-info {
+    background-color: var(--accent-info);
+}
+
+button.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Forms */
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+input[type="range"] {
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-value {
+    display: inline-block;
+    margin-left: 1rem;
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+/* Dashboard Display */
+.big-display {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--bg-secondary);
+    border-radius: 10px;
+    margin: 1rem 0;
+}
+
+.big-display .sign {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin: 1rem 0;
+}
+
+.big-display .confidence {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.big-display .fps {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: var(--bg-secondary);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--accent-primary);
+    transition: width 0.3s;
+}
+
+/* Device List */
+.device-list {
+    list-style: none;
+}
+
+.device-item {
+    background-color: var(--bg-secondary);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.device-info {
+    flex: 1;
+    min-width: 150px;
+}
+
+.device-info .name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.device-info .mac {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+
+.device-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.device-actions button {
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Sign List */
+.sign-list {
+    list-style: none;
+}
+
+.sign-item {
+    background-color: var(--bg-secondary);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sign-item .name {
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.sign-item .count {
+    color: var(--text-secondary);
+}
+
+/* Log Viewer */
+.log-viewer {
+    background-color: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
+.log-viewer pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Messages */
+.message {
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 1rem 0;
+}
+
+.message.success {
+    background-color: rgba(0, 255, 136, 0.1);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.message.error {
+    background-color: rgba(255, 68, 68, 0.1);
+    border: 1px solid var(--accent-danger);
+    color: var(--accent-danger);
+}
+
+.message.info {
+    background-color: rgba(68, 170, 255, 0.1);
+    border: 1px solid var(--accent-info);
+    color: var(--accent-info);
+}
+
+/* Loading Spinner */
+.spinner {
+    border: 3px solid var(--bg-secondary);
+    border-top: 3px solid var(--accent-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Grid Layout for Buttons */
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.button-grid button {
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    nav h1 {
+        font-size: 1.2rem;
+    }
+    
+    .big-display .sign {
+        font-size: 2rem;
+    }
+    
+    .device-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .device-actions {
+        width: 100%;
+    }
+    
+    .device-actions button {
+        flex: 1;
+    }
+}
