@@ -1,0 +1,17 @@
+{
+  "confidence_threshold": 0.7,
+  "stability_frames": 15,
+  "cooldown_seconds": 3,
+  "speech_rate": 150,
+  "speech_volume": 0.9,
+  "camera_source": 0,
+  "camera_width": 640,
+  "camera_height": 480,
+  "pi_camera_width": 320,
+  "pi_camera_height": 240,
+  "model_path": "models/isl_model.keras",
+  "tflite_model_path": "models/isl_model.tflite",
+  "labels_path": "models/labels.npy",
+  "data_dir": "data",
+  "log_file": "logs/smart_glasses.log"
+}

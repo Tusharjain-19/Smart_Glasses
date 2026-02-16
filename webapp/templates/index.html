@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Smart Glasses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>System Status</h2>
+    
+    <div class="big-display">
+        <div>
+            <span class="status-indicator" id="status-indicator"></span>
+            <span id="status-text">Loading...</span>
+        </div>
+        
+        <div class="sign" id="current-sign">---</div>
+        <div class="confidence" id="confidence">Confidence: 0%</div>
+        <div class="fps" id="fps">FPS: 0</div>
+    </div>
+    
+    <div class="button-grid">
+        <button onclick="startInference()" id="start-btn">▶️ Start</button>
+        <button onclick="stopInference()" class="btn-danger" id="stop-btn">⏹️ Stop</button>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Quick Links</h3>
+    <div class="button-grid">
+        <button onclick="location.href='/bluetooth'" class="btn-info">🔵 Bluetooth</button>
+        <button onclick="location.href='/settings'" class="btn-info">⚙️ Settings</button>
+        <button onclick="location.href='/collect'" class="btn-info">📊 Collect Data</button>
+        <button onclick="location.href='/train'" class="btn-info">🧠 Train Model</button>
+    </div>
+</div>
+
+<div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showMessage(text, type = 'info') {
+        const messageArea = document.getElementById('message-area');
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        messageArea.innerHTML = '';
+        messageArea.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 5000);
+    }
+    
+    async function startInference() {
+        try {
+            const response = await fetch('/api/start_inference', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage(data.message, 'success');
+                updateStatus();
+            } else {
+                showMessage(data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    async function stopInference() {
+        try {
+            const response = await fetch('/api/stop_inference', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage(data.message, 'success');
+                updateStatus();
+            } else {
+                showMessage(data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    async function updateStatus() {
+        try {
+            const response = await fetch('/api/status');
+            const data = await response.json();
+            
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const currentSign = document.getElementById('current-sign');
+            const confidence = document.getElementById('confidence');
+            const fps = document.getElementById('fps');
+            
+            if (data.inference_running) {
+                statusIndicator.className = 'status-indicator running';
+                statusText.textContent = 'RUNNING';
+                
+                currentSign.textContent = data.current_sign || '---';
+                confidence.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+                fps.textContent = `FPS: ${data.fps}`;
+            } else {
+                statusIndicator.className = 'status-indicator stopped';
+                statusText.textContent = 'STOPPED';
+                currentSign.textContent = '---';
+                confidence.textContent = 'Confidence: 0%';
+                fps.textContent = 'FPS: 0';
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+        }
+    }
+    
+    // Listen for real-time updates
+    socket.on('inference_update', function(data) {
+        const currentSign = document.getElementById('current-sign');
+        const confidence = document.getElementById('confidence');
+        const fps = document.getElementById('fps');
+        
+        if (data.current_sign) {
+            currentSign.textContent = data.current_sign;
+        }
+        if (data.confidence !== undefined) {
+            confidence.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+        }
+        if (data.fps !== undefined) {
+            fps.textContent = `FPS: ${data.fps}`;
+        }
+    });
+    
+    // Update status on page load and periodically
+    updateStatus();
+    setInterval(updateStatus, 2000);
+</script>
+{% endblock %}

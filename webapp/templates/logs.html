@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Logs - Smart Glasses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📋 System Logs</h2>
+    
+    <div class="button-grid">
+        <button onclick="loadLogs()" class="btn-info">🔄 Refresh Logs</button>
+        <button onclick="clearLogViewer()" class="btn-warning">🗑️ Clear Display</button>
+    </div>
+    
+    <div class="log-viewer" id="log-viewer">
+        <pre id="log-content">Click "Refresh Logs" to load system logs...</pre>
+    </div>
+</div>
+
+<div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showMessage(text, type = 'info') {
+        const messageArea = document.getElementById('message-area');
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        messageArea.innerHTML = '';
+        messageArea.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 5000);
+    }
+    
+    async function loadLogs() {
+        const logContent = document.getElementById('log-content');
+        
+        logContent.textContent = 'Loading logs...';
+        
+        try {
+            const response = await fetch('/api/logs/get');
+            const data = await response.json();
+            
+            if (data.success) {
+                logContent.textContent = data.logs;
+                
+                // Auto-scroll to bottom
+                const logViewer = document.getElementById('log-viewer');
+                logViewer.scrollTop = logViewer.scrollHeight;
+                
+                showMessage('Logs loaded', 'success');
+            } else {
+                logContent.textContent = 'Error loading logs: ' + data.message;
+                showMessage('Failed to load logs', 'error');
+            }
+        } catch (error) {
+            logContent.textContent = 'Error: ' + error.message;
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    function clearLogViewer() {
+        const logContent = document.getElementById('log-content');
+        logContent.textContent = 'Logs cleared. Click "Refresh Logs" to reload.';
+    }
+    
+    // Auto-refresh logs every 5 seconds
+    let autoRefresh = setInterval(loadLogs, 5000);
+    
+    // Load logs on page load
+    loadLogs();
+</script>
+{% endblock %}

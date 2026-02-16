@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Smart Glasses{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <nav>
+        <h1>🤟 Smart Glasses</h1>
+        <ul>
+            <li><a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a></li>
+            <li><a href="/bluetooth" {% if request.path == '/bluetooth' %}class="active"{% endif %}>Bluetooth</a></li>
+            <li><a href="/settings" {% if request.path == '/settings' %}class="active"{% endif %}>Settings</a></li>
+            <li><a href="/collect" {% if request.path == '/collect' %}class="active"{% endif %}>Collect</a></li>
+            <li><a href="/train" {% if request.path == '/train' %}class="active"{% endif %}>Train</a></li>
+            <li><a href="/logs" {% if request.path == '/logs' %}class="active"{% endif %}>Logs</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script>
+        // Initialize SocketIO
+        const socket = io();
+        
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+        
+        socket.on('connected', function(data) {
+            console.log(data.message);
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

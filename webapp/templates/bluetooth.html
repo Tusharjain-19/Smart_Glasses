@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Bluetooth - Smart Glasses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>🔵 Bluetooth Management</h2>
+    <p>Pair and connect your Bluetooth speaker pendant.</p>
+    
+    <button onclick="scanDevices()" class="btn-info">🔍 Scan for Devices</button>
+    
+    <div id="scanning" style="display: none;">
+        <div class="spinner"></div>
+        <p style="text-align: center;">Scanning...</p>
+    </div>
+</div>
+
+<div class="card" id="devices-card" style="display: none;">
+    <h3>Available Devices</h3>
+    <ul class="device-list" id="device-list"></ul>
+</div>
+
+<div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showMessage(text, type = 'info') {
+        const messageArea = document.getElementById('message-area');
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        messageArea.innerHTML = '';
+        messageArea.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 5000);
+    }
+    
+    async function scanDevices() {
+        const scanning = document.getElementById('scanning');
+        const devicesCard = document.getElementById('devices-card');
+        
+        scanning.style.display = 'block';
+        devicesCard.style.display = 'none';
+        
+        try {
+            const response = await fetch('/api/bluetooth/scan', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            scanning.style.display = 'none';
+            
+            if (data.success) {
+                displayDevices(data.devices);
+                showMessage(`Found ${data.devices.length} devices`, 'success');
+            } else {
+                showMessage('Scan failed: ' + data.message, 'error');
+            }
+        } catch (error) {
+            scanning.style.display = 'none';
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    function displayDevices(devices) {
+        const deviceList = document.getElementById('device-list');
+        const devicesCard = document.getElementById('devices-card');
+        
+        deviceList.innerHTML = '';
+        
+        if (devices.length === 0) {
+            deviceList.innerHTML = '<li style="padding: 1rem;">No devices found</li>';
+        } else {
+            devices.forEach(device => {
+                const li = document.createElement('li');
+                li.className = 'device-item';
+                
+                li.innerHTML = `
+                    <div class="device-info">
+                        <div class="name">${device.name}</div>
+                        <div class="mac">${device.mac}</div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="pairDevice('${device.mac}')" class="btn-info">Pair</button>
+                        <button onclick="trustDevice('${device.mac}')" class="btn-info">Trust</button>
+                        <button onclick="connectDevice('${device.mac}')">Connect</button>
+                        <button onclick="disconnectDevice('${device.mac}')" class="btn-danger">Disconnect</button>
+                    </div>
+                `;
+                
+                deviceList.appendChild(li);
+            });
+        }
+        
+        devicesCard.style.display = 'block';
+    }
+    
+    async function pairDevice(mac) {
+        try {
+            const response = await fetch('/api/bluetooth/pair', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mac: mac})
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Device paired successfully', 'success');
+            } else {
+                showMessage('Pairing failed: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    async function trustDevice(mac) {
+        try {
+            const response = await fetch('/api/bluetooth/trust', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mac: mac})
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Device trusted successfully', 'success');
+            } else {
+                showMessage('Trust failed: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    async function connectDevice(mac) {
+        try {
+            const response = await fetch('/api/bluetooth/connect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mac: mac})
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Device connected successfully', 'success');
+            } else {
+                showMessage('Connection failed: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+    
+    async function disconnectDevice(mac) {
+        try {
+            const response = await fetch('/api/bluetooth/disconnect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mac: mac})
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Device disconnected successfully', 'success');
+            } else {
+                showMessage('Disconnection failed: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+</script>
+{% endblock %}

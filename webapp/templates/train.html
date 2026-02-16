@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Training - Smart Glasses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>🧠 Model Training</h2>
+    <p>Train the ISL recognition model with collected data</p>
+    
+    <button onclick="startTraining()" id="train-btn">▶️ Start Training</button>
+    
+    <div id="training-status" style="display: none;">
+        <div class="message info">
+            <strong>Training in progress...</strong>
+            <br>This may take several minutes
+        </div>
+        
+        <div class="log-viewer" id="training-log">
+            <pre id="training-output">Initializing training...</pre>
+        </div>
+    </div>
+    
+    <div id="training-complete" style="display: none;">
+        <div class="message success">
+            <strong>Training Complete!</strong>
+            <br>Model saved successfully
+        </div>
+        
+        <button onclick="viewPlot()" class="btn-info">📊 View Training Plot</button>
+    </div>
+</div>
+
+<div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showMessage(text, type = 'info') {
+        const messageArea = document.getElementById('message-area');
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        messageArea.innerHTML = '';
+        messageArea.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 5000);
+    }
+    
+    async function startTraining() {
+        const trainBtn = document.getElementById('train-btn');
+        const trainingStatus = document.getElementById('training-status');
+        const trainingComplete = document.getElementById('training-complete');
+        const trainingOutput = document.getElementById('training-output');
+        
+        trainBtn.disabled = true;
+        trainingStatus.style.display = 'block';
+        trainingComplete.style.display = 'none';
+        trainingOutput.textContent = 'Starting training...\n';
+        
+        try {
+            const response = await fetch('/api/train/start', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Training started!', 'success');
+            } else {
+                showMessage('Failed to start training: ' + data.message, 'error');
+                trainBtn.disabled = false;
+                trainingStatus.style.display = 'none';
+            }
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+            trainBtn.disabled = false;
+            trainingStatus.style.display = 'none';
+        }
+    }
+    
+    function viewPlot() {
+        window.open('/models/training_plot.png', '_blank');
+    }
+    
+    // Listen for training progress updates
+    socket.on('training_progress', function(data) {
+        const trainingOutput = document.getElementById('training-output');
+        trainingOutput.textContent += data.message + '\n';
+        
+        // Auto-scroll to bottom
+        trainingOutput.parentElement.scrollTop = trainingOutput.parentElement.scrollHeight;
+    });
+    
+    socket.on('training_complete', function(data) {
+        const trainBtn = document.getElementById('train-btn');
+        const trainingComplete = document.getElementById('training-complete');
+        
+        trainBtn.disabled = false;
+        trainingComplete.style.display = 'block';
+        
+        showMessage('Training completed successfully!', 'success');
+    });
+</script>
+{% endblock %}
